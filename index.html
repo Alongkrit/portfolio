@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Alongkrit Bose | Portfolio</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<header class="navbar">
+
+<h2 class="logo">Alongkrit</h2>
+
+<nav>
+
+<a href="#about">About</a>
+<a href="#skills">Skills</a>
+<a href="#projects">Projects</a>
+<a href="#contact">Contact</a>
+
+</nav>
+
+<button id="darkToggle">🌙</button>
+
+</header>
+
+<!-- HERO -->
+
+<section class="hero">
+
+<img src="image.png" class="pfp">
+
+<div>
+
+<h1>Hello, I'm Alongkrit</h1>
+
+<p id="typing"></p>
+
+<div class="socials">
+
+<a href="https://github.com/alongkrit"><i class="fab fa-github"></i></a>
+<a href="https://www.linkedin.com/in/alongkrit-bose-25aa1a28a?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"><i class="fab fa-linkedin"></i></a>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ABOUT -->
+
+<section id="about">
+
+<h2>About Me</h2>
+
+<p>
+
+Computer Science student at Netaji Subhash Engineering College passionate about building modern websites and learning new technologies.
+
+</p>
+
+</section>
+
+<!-- SKILLS -->
+
+<section id="skills">
+
+<h2>Skills</h2>
+
+<div class="skills">
+
+<div>HTML</div>
+<div>CSS</div>
+<div>JavaScript</div>
+<div>React</div>
+<div>Git</div>
+<div>GitHub</div>
+
+
+</div>
+
+</section>
+
+<!-- PROJECT FILTER -->
+
+<section id="projects">
+
+<h2>Projects</h2>
+
+<div class="filters">
+<button onclick="filterProjects('all')">All</button>
+<button onclick="filterProjects('web')">Web</button>
+<button onclick="filterProjects('react')">React</button>
+<button onclick="filterProjects('js')">JavaScript</button>
+</div>
+
+<div id="projects-container" class="projects"></div>
+
+</section>
+
+<!-- MODAL -->
+<div id="projectModal" class="modal">
+  <div class="modal-content">
+    <span id="closeModal">&times;</span>
+    <img id="modalImg">
+    <h2 id="modalTitle"></h2>
+    <p id="modalDesc"></p>
+    <div id="modalLinks"></div>
+  </div>
+</div>
+
+
+
+<!-- CONTACT -->
+
+<section id="contact">
+
+<h2>Contact</h2>
+
+<p>
+Email: 
+<a href="mailto:alongkritb@gmail.com?subject=Contact from Portfolio">
+alongkritb@gmail.com
+</a>
+</p>
+<p>GitHub: github.com/alongkrit</p>
+
+</section>
+
+<footer>
+
+<p>© 2026 Alongkrit Bose</p>
+
+</footer>
+
+<script>
+
+/* typing animation */
+
+const text = [
+"Computer Science Student",
+"Aspiring Web Developer",
+"Learning React & JavaScript"
+]
+
+let i = 0
+let j = 0
+
+function typing() {
+  if (i < text.length) {
+    document.getElementById("typing").textContent = text[i].slice(0, j++)
+    if (j > text[i].length) {
+      i++
+      j = 0
+    }
+  }
+  setTimeout(typing, 120)
+}
+
+typing()
+
+/* dark mode */
+
+const toggle = document.getElementById("darkToggle")
+
+toggle.onclick = () => {
+  document.body.classList.toggle("dark")
+}
+
+/* github projects */
+
+const username = "alongkrit"
+let allRepos = []
+
+function getCategory(repo) {
+  const name = repo.name.toLowerCase()
+
+  if (name.includes("react")) return "react"
+  if (name.includes("js") || name.includes("javascript")) return "js"
+  return "web"
+}
+
+function showSkeleton() {
+  const container = document.getElementById("projects-container")
+  container.innerHTML = ""
+  for (let i = 0; i < 6; i++) {
+    const div = document.createElement("div")
+    div.className = "skeleton"
+    container.appendChild(div)
+  }
+}
+
+async function loadProjects() {
+
+  showSkeleton()
+
+  const res = await fetch(`https://api.github.com/users/${username}/repos?per_page=100`)
+  const repos = await res.json()
+
+  allRepos = repos.filter(r => !r.fork)
+  displayProjects(allRepos)
+}
+
+function displayProjects(repos) {
+
+  const container = document.getElementById("projects-container")
+  container.innerHTML = ""
+
+  repos
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .forEach(repo => {
+
+      const category = getCategory(repo)
+
+      const card = document.createElement("div")
+      card.className = "project"
+
+      card.innerHTML = `
+        <img src="https://opengraph.githubassets.com/1/${username}/${repo.name}">
+        <h3>${repo.name}</h3>
+        <p>${repo.description || "GitHub project"}</p>
+      `
+
+      card.onclick = () => openModal(repo)
+
+      card.setAttribute("data-category", category)
+
+      container.appendChild(card)
+    })
+}
+
+/* FILTER */
+
+function filterProjects(type) {
+  if (type === "all") return displayProjects(allRepos)
+
+  const filtered = allRepos.filter(repo => getCategory(repo) === type)
+  displayProjects(filtered)
+}
+
+/* MODAL */
+
+const modal = document.getElementById("projectModal")
+
+function openModal(repo) {
+  modal.style.display = "flex"
+
+  document.getElementById("modalImg").src =
+    `https://opengraph.githubassets.com/1/${username}/${repo.name}`
+
+  document.getElementById("modalTitle").textContent = repo.name
+  document.getElementById("modalDesc").textContent =
+    repo.description || "No description available"
+
+    const liveUrl = repo.homepage 
+  ? repo.homepage 
+  : `https://${username}.github.io/${repo.name}`
+
+document.getElementById("modalLinks").innerHTML = `
+  <a href="${liveUrl}" target="_blank">Live</a>
+  <a href="${repo.html_url}" target="_blank">Code</a>
+`
+ 
+}
+
+/* CLOSE MODAL */
+
+document.getElementById("closeModal").onclick = () => {
+  modal.style.display = "none"
+}
+
+window.onclick = (e) => {
+  if (e.target === modal) modal.style.display = "none"
+}
+
+loadProjects()
+
+</script>
+
+</body>
+</html>
